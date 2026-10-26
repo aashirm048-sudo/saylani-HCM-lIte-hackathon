@@ -1,24 +1,100 @@
+
 const express = require('express');
 const router = express.Router();
+
 const Employee = require('../models/Employee');
-const Activity = require('../models/Activity');
-const Company = require('./models/Company');
+const Company = require('../models/Company');
+
 router.post('/query', async (req, res) => {
   try {
     const { question } = req.body;
-    const lowerQ = question.toLowerCase();
-    if (lowerQ.includes('how many employees') || lowerQ.includes('total employees')) {
-      const count = await Employee.countDocuments();
-      return res.json({ answer: `There are currently ${count} registered employees in the system.` });
+
+    if (typeof question !== 'string' || !question.trim()) {
+      return res.status(400).json({
+        error: 'Please enter a question.'
+      });
     }
-    if (lowerQ.includes('company') || lowerQ.includes('setup')) {
+
+    const q = question.toLowerCase().trim();
+    if (
+      q.includes('company') ||
+      q.includes('working hours') ||
+      q.includes('admin email')
+    ) {
       const company = await Company.findOne();
-      if (!company) return res.json({ answer: "No company has been set up yet. Admin needs to initialize it." });
-      return res.json({ answer: `The company is registered as ${company.companyName} with working hours: ${company.workingHours}.` });
+
+      if (!company) {
+        return res.json({
+          answer: 'No company has been set up yet. Admin needs to set it up.'
+        });
+      }
+
+      if (q.includes('working hours')) {
+        return res.json({
+          answer: `Company working hours are ${company.workingHours}.`
+        });
+      }
+
+      if (q.includes('admin email')) {
+        return res.json({
+          answer: `The registered admin email is ${company.adminEmail}.`
+        });
+      }
+
+      return res.json({
+        answer: `The registered company is ${company.companyName}. Working hours: ${company.workingHours}.`
+      });
     }
-    res.json({ answer: "I am connected to the live HCM database, but I couldn't match your query to a live data metric." });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    if (q.includes('department')) {
+      const departments = await Employee.aggregate([
+        {
+          $group: {
+            _id: '$department',
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { _id: 1 } }
+      ]);
+
+      if (!departments.length) {
+        return res.json({
+          answer: 'No employees are registered yet, so there are no department records.'
+        });
+      }
+
+      const summary = departments
+        .map(item => `${item._id}: ${item.count}`)
+        .join(', ');
+
+      return res.json({
+        answer: `Employees by department: ${summary}.`,
+        data: departments
+      });
+    }
+    if (q.includes('active employee')) {
+      const count = await Employee.countDocuments({ status: 'Active' });
+
+      return res.json({
+        answer: `There are currently ${count} active employees.`
+      });
+    }
+    if (
+      q.includes('employee') ||
+      q.includes('staff') ||
+      q.includes('headcount')
+    ) {
+      const count = await Employee.countDocuments();
+
+      return res.json({
+        answer: `There are currently ${count} registered employees in the system.`
+      });
+    }
+
+    return res.json({
+      answer: "I can answer questions about company details, working hours, total employees, active employees, and department-wise employee counts. Please try one of these topics."
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
