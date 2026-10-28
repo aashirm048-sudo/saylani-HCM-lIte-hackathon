@@ -4,7 +4,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
-
+const cors = require('cors');
+app.use(cors({
+  origin: "*",
+  credentials: true
+}));
 const companyRoutes = require('./routes/company');
 const employeeRoutes = require('./routes/employee');
 const aiRoutes = require('./routes/ai');
