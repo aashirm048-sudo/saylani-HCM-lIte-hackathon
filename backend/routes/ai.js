@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 const Employee = require('../models/Employee');
-const Company = require('../models/Company');
+const Company = require('../models/company');
 
 router.post('/query', async (req, res) => {
   try {
