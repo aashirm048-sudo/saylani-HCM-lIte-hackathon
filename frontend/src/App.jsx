@@ -14,7 +14,7 @@ function App() {
   const [salary, setSalary] = useState('');
   const [question, setQuestion] = useState('');
   const [aiAnswer, setAiAnswer] = useState('');
-  const API = 'http://localhost:5000/api';
+  const API = 'https://saylani-hcm-l-ite-hackathon.vercel.app/';
   useEffect(() => {
     fetchCompany();
     fetchEmployees();
