@@ -14,12 +14,11 @@ function App() {
   const [salary, setSalary] = useState('');
   const [question, setQuestion] = useState('');
   const [aiAnswer, setAiAnswer] = useState('');
-  const API = 'https://saylani-hcm-l-ite-hackathon.vercel.app/';
+  const API = 'https://saylani-hcm-l-ite-hackathon.vercel.app';
   useEffect(() => {
     fetchCompany();
     fetchEmployees();
   }, []);
-
   const fetchCompany = async () => {
     try {
       const res = await axios.get(`${API}/company`);
@@ -59,6 +58,7 @@ function App() {
       setAiAnswer(res.data.answer);
     } catch (err) { alert('AI Error'); }
   };
+
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial', maxWidth: '900px', margin: 'auto' }}>
       <h1>HCM Lite - Saylani Hackathon</h1>
